@@ -588,3 +588,88 @@ def create_dashboard(df: pd.DataFrame) -> str:
 
 print("[OK] Task 3.6-3.10: Remaining chart functions defined")
 print("[OK] Task 3: All 10 chart generation functions complete")
+
+
+# ============================================================================
+# TASK 4: MAIN EXECUTION FUNCTION
+# ============================================================================
+
+def main():
+    """
+    Main execution function - orchestrates all chart generation.
+    
+    Returns:
+        int: Number of charts successfully created
+    """
+    # Task 4.2: Print start message
+    print("\n" + "="*70)
+    print("Customer Churn Chart Generation")
+    print("="*70)
+    print(f"Output Directory: {OUTPUT_DIR}")
+    print(f"Data Source: {DATA_PATH}")
+    print("="*70 + "\n")
+    
+    try:
+        # Task 4.3: Load data
+        df = load_data(DATA_PATH)
+        
+        # Task 4.4: Generate all charts
+        print("\n[TASK 3] Generating Charts...\n")
+        charts_created = []
+        
+        # Task 4.5: Track successful chart creation
+        chart_functions = [
+            ("Chart 1: Churn Distribution Pie", create_churn_pie_chart),
+            ("Chart 2: Churn by Contract Type", create_contract_churn_chart),
+            ("Chart 3: Churn by Support Calls", create_support_calls_chart),
+            ("Chart 4: Churn by Payment Method", create_payment_method_chart),
+            ("Chart 5: Churn by Products", create_products_chart),
+            ("Chart 6: Tenure Distribution", create_tenure_histogram),
+            ("Chart 7: Age Box Plot", create_age_boxplot),
+            ("Chart 8: Monthly Charges Violin", create_charges_violin),
+            ("Chart 9: Contract × Product Stack", create_contract_product_stack),
+            ("Chart 10: Dashboard Overview", create_dashboard),
+        ]
+        
+        for name, func in chart_functions:
+            try:
+                print(f"\nGenerating {name}...")
+                path = func(df)
+                charts_created.append(path)
+            except Exception as e:
+                print(f"  [ERROR] Failed to create {name}: {e}")
+        
+        # Task 4.6: Print summary
+        print("\n" + "="*70)
+        print(f"[OK] Task 4: Chart Generation Complete!")
+        print(f"  - Charts Created: {len(charts_created)}/10")
+        print(f"  - Output Location: {OUTPUT_DIR.absolute()}")
+        print("="*70 + "\n")
+        
+        return len(charts_created)
+        
+    except Exception as e:
+        # Task 4.7: Error handling
+        print(f"\n[ERROR] Chart generation failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return 0
+
+
+print("[OK] Task 4: Main execution function defined")
+
+
+# ============================================================================
+# TASK 5: ENTRY POINT
+# ============================================================================
+
+if __name__ == "__main__":
+    # Execute main function
+    num_charts = main()
+    
+    # Exit with appropriate code
+    exit(0 if num_charts == 10 else 1)
+
+
+print("[OK] Task 5: Entry point configured")
+print("[OK] All tasks complete - ready for execution!")
