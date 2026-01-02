@@ -1,1 +1,5 @@
-# Data processing\npandas>=2.0.0\nnumpy>=1.24.0\n\n# Visualization\nmatplotlib>=3.7.0\nseaborn>=0.12.0\n
+pandas>=2.0.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+numpy>=1.24.0
+scipy>=1.10.0
