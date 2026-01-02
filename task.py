@@ -355,4 +355,236 @@ def create_products_chart(df: pd.DataFrame) -> str:
     return str(output_path)
 
 
-print("[OK] Task 3.1-3.5: First 5 chart functions defined")
+# Task 3.6: Tenure Distribution (Histogram)
+def create_tenure_histogram(df: pd.DataFrame) -> str:
+    """
+    Generate tenure distribution comparison histogram.
+    
+    Args:
+        df: Customer churn DataFrame
+        
+    Returns:
+        str: Path to saved chart
+    """
+    # Separate data by churn status
+    retained = df[df['churned'] == 0]['tenure_months']
+    churned = df[df['churned'] == 1]['tenure_months']
+    
+    # Create overlapping histograms
+    fig, ax = plt.subplots(figsize=(9, 5))
+    ax.hist(retained, bins=8, alpha=0.6, label='Retained', color=NEUTRAL_BLUE, edgecolor='black')
+    ax.hist(churned, bins=8, alpha=0.6, label='Churned', color=CHURN_RED, edgecolor='black')
+    
+    # Styling
+    ax.set_xlabel('Tenure (months)')
+    ax.set_ylabel('Customer Count')
+    ax.set_title('Tenure Distribution: Churned vs Retained Customers')
+    ax.legend(loc='upper right')
+    ax.grid(axis='y', alpha=0.3)
+    
+    # Save
+    output_path = OUTPUT_DIR / '06_tenure_distribution.png'
+    plt.tight_layout()
+    plt.savefig(output_path, bbox_inches='tight')
+    plt.close()
+    
+    print(f"  [OK] Saved: {output_path}")
+    return str(output_path)
+
+
+# Task 3.7: Age Distribution (Box Plot)
+def create_age_boxplot(df: pd.DataFrame) -> str:
+    """
+    Generate age distribution box plot comparison.
+    
+    Args:
+        df: Customer churn DataFrame
+        
+    Returns:
+        str: Path to saved chart
+    """
+    # Prepare data
+    df_plot = df.copy()
+    df_plot['Status'] = df_plot['churned'].map({0: 'Retained', 1: 'Churned'})
+    
+    # Create box plot
+    fig, ax = plt.subplots(figsize=(7, 5))
+    bp = ax.boxplot(
+        [df[df['churned'] == 0]['age'], df[df['churned'] == 1]['age']],
+        labels=['Retained', 'Churned'],
+        patch_artist=True,
+        medianprops=dict(color='black', linewidth=2)
+    )
+    
+    # Color boxes
+    bp['boxes'][0].set_facecolor(RETAIN_GREEN)
+    bp['boxes'][1].set_facecolor(CHURN_RED)
+    
+    # Styling
+    ax.set_xlabel('Customer Status')
+    ax.set_ylabel('Age')
+    ax.set_title('Age Distribution: Churned vs Retained')
+    ax.grid(axis='y', alpha=0.3)
+    
+    # Save
+    output_path = OUTPUT_DIR / '07_age_boxplot.png'
+    plt.tight_layout()
+    plt.savefig(output_path, bbox_inches='tight')
+    plt.close()
+    
+    print(f"  [OK] Saved: {output_path}")
+    return str(output_path)
+
+
+# Task 3.8: Monthly Charges (Violin Plot)
+def create_charges_violin(df: pd.DataFrame) -> str:
+    """
+    Generate monthly charges violin plot comparison.
+    
+    Args:
+        df: Customer churn DataFrame
+        
+    Returns:
+        str: Path to saved chart
+    """
+    # Prepare data
+    df_plot = df.copy()
+    df_plot['Status'] = df_plot['churned'].map({0: 'Retained', 1: 'Churned'})
+    
+    # Create violin plot
+    fig, ax = plt.subplots(figsize=(7, 5))
+    parts = ax.violinplot(
+        [df[df['churned'] == 0]['monthly_charges'], df[df['churned'] == 1]['monthly_charges']],
+        positions=[0, 1],
+        showmeans=True,
+        showmedians=True
+    )
+    
+    # Color violins
+    parts['bodies'][0].set_facecolor(RETAIN_GREEN)
+    parts['bodies'][0].set_alpha(0.7)
+    parts['bodies'][1].set_facecolor(CHURN_RED)
+    parts['bodies'][1].set_alpha(0.7)
+    
+    # Styling
+    ax.set_xticks([0, 1])
+    ax.set_xticklabels(['Retained', 'Churned'])
+    ax.set_xlabel('Customer Status')
+    ax.set_ylabel('Monthly Charges ($)')
+    ax.set_title('Monthly Charges Distribution: Churned vs Retained')
+    ax.grid(axis='y', alpha=0.3)
+    
+    # Save
+    output_path = OUTPUT_DIR / '08_charges_violin.png'
+    plt.tight_layout()
+    plt.savefig(output_path, bbox_inches='tight')
+    plt.close()
+    
+    print(f"  [OK] Saved: {output_path}")
+    return str(output_path)
+
+
+# Task 3.9: Contract × Product Interaction (Stacked Bar)
+def create_contract_product_stack(df: pd.DataFrame) -> str:
+    """
+    Generate contract type × product count stacked bar chart.
+    
+    Args:
+        df: Customer churn DataFrame
+        
+    Returns:
+        str: Path to saved chart
+    """
+    # Calculate counts
+    contract_product = df.groupby(['contract_type', 'num_products']).size().unstack(fill_value=0)
+    
+    # Create stacked bar chart
+    fig, ax = plt.subplots(figsize=(9, 6))
+    contract_product.plot(kind='bar', stacked=True, ax=ax, 
+                         colormap='viridis', edgecolor='black', linewidth=0.5)
+    
+    # Styling
+    ax.set_xlabel('Contract Type')
+    ax.set_ylabel('Customer Count')
+    ax.set_title('Customer Segmentation: Contract Type × Product Count')
+    ax.set_xticklabels(contract_product.index, rotation=15, ha='right')
+    ax.legend(title='Products', bbox_to_anchor=(1.05, 1), loc='upper left')
+    ax.grid(axis='y', alpha=0.3)
+    
+    # Save
+    output_path = OUTPUT_DIR / '09_contract_product_stack.png'
+    plt.tight_layout()
+    plt.savefig(output_path, bbox_inches='tight')
+    plt.close()
+    
+    print(f"  [OK] Saved: {output_path}")
+    return str(output_path)
+
+
+# Task 3.10: Dashboard Overview (Multi-Panel)
+def create_dashboard(df: pd.DataFrame) -> str:
+    """
+    Generate executive dashboard with 2x2 grid of charts.
+    
+    Args:
+        df: Customer churn DataFrame
+        
+    Returns:
+        str: Path to saved chart
+    """
+    # Create 2x2 subplot grid
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 9))
+    fig.suptitle('Customer Churn Analysis Dashboard', fontsize=16, fontweight='bold')
+    
+    # Top-left: Churn pie chart
+    churn_counts = df['churned'].value_counts().sort_index()
+    ax1.pie(churn_counts, labels=['Retained', 'Churned'], 
+            colors=[RETAIN_GREEN, CHURN_RED], autopct='%1.1f%%', startangle=90)
+    ax1.set_title('Overall Churn Distribution')
+    
+    # Top-right: Contract type churn rates
+    contract_churn = df.groupby('contract_type').agg({'churned': ['sum', 'count']})
+    contract_churn.columns = ['churned', 'total']
+    contract_churn['rate'] = (contract_churn['churned'] / contract_churn['total']) * 100
+    contract_churn = contract_churn.sort_values('rate', ascending=False)
+    ax2.bar(range(len(contract_churn)), contract_churn['rate'], color=CHURN_RED)
+    ax2.set_xticks(range(len(contract_churn)))
+    ax2.set_xticklabels(contract_churn.index, rotation=15, ha='right')
+    ax2.set_ylabel('Churn Rate (%)')
+    ax2.set_title('Churn by Contract Type')
+    ax2.grid(axis='y', alpha=0.3)
+    
+    # Bottom-left: Support calls churn rates
+    support_churn = df.groupby('num_support_calls').agg({'churned': ['sum', 'count']})
+    support_churn.columns = ['churned', 'total']
+    support_churn['rate'] = (support_churn['churned'] / support_churn['total']) * 100
+    colors_grad = ['#f39c12', '#e67e22', '#d35400', '#c0392b', '#a93226']
+    ax3.bar(support_churn.index, support_churn['rate'], color=colors_grad[:len(support_churn)])
+    ax3.set_xlabel('Support Calls')
+    ax3.set_ylabel('Churn Rate (%)')
+    ax3.set_title('Churn by Support Calls')
+    ax3.grid(axis='y', alpha=0.3)
+    
+    # Bottom-right: Product count churn rates
+    products_churn = df.groupby('num_products').agg({'churned': ['sum', 'count']})
+    products_churn.columns = ['churned', 'total']
+    products_churn['rate'] = (products_churn['churned'] / products_churn['total']) * 100
+    colors_green = ['#27ae60', '#2ecc71', '#52be80', '#7dcea0', '#a9dfbf']
+    ax4.bar(products_churn.index, products_churn['rate'], color=colors_green[:len(products_churn)])
+    ax4.set_xlabel('Number of Products')
+    ax4.set_ylabel('Churn Rate (%)')
+    ax4.set_title('Churn by Product Count')
+    ax4.grid(axis='y', alpha=0.3)
+    
+    # Save
+    output_path = OUTPUT_DIR / '10_dashboard_overview.png'
+    plt.tight_layout()
+    plt.savefig(output_path, bbox_inches='tight')
+    plt.close()
+    
+    print(f"  [OK] Saved: {output_path}")
+    return str(output_path)
+
+
+print("[OK] Task 3.6-3.10: Remaining chart functions defined")
+print("[OK] Task 3: All 10 chart generation functions complete")
