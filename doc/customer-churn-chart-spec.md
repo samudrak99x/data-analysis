@@ -1,699 +1,465 @@
-# Customer Churn - BI Chart Specification
+# Customer Churn Visualization Specification
 
-**Dataset:** `customer_churn.csv`  
-**Created:** January 2, 2026  
-**Specification Type:** Chart-Only Visualization Plan  
-**Role:** BI Visualization Architect (Specification Only - No Code, No Statistics)
-
----
-
-## 📋 DATASET SCHEMA BRIEF
-
-**File Information:**
-- Format: CSV (ASCII, comma-delimited)
-- Size: 73.8 KB
-- Records: 1,000 customers
-- Fields: 10 columns
-- Data Quality: ✅ No missing values
-
-**Column Structure:**
-
-| Field | Type | Unique | Description |
-|-------|------|--------|-------------|
-| customer_id | Numeric | 100 | Customer identifier |
-| age | Numeric | 41 | Customer age |
-| tenure_months | Numeric | 41 | Months with company |
-| monthly_charges | Numeric | 91 | Monthly bill amount |
-| total_charges | Numeric | 98 | Lifetime charges |
-| num_products | Numeric | 5 | Products owned (1-5) |
-| num_support_calls | Numeric | 5 | Support interactions (0-4+) |
-| contract_type | Categorical | 3 | Month-to-month, One year, Two year |
-| payment_method | Categorical | 4 | Credit card, Mailed check, Electronic, Bank transfer |
-| churned | Binary | 2 | 0=Retained, 1=Churned |
-
-**Key Categorical Distributions:**
-- **Contract Types:** Month-to-month (507), One year (300), Two year (193)
-- **Payment Methods:** Credit card (263), Mailed check (259), Electronic (255), Bank transfer (223)
-- **Churn Status:** Retained (794), Churned (206)
+**Generated:** January 2, 2026  
+**Data Source:** `../data/customer_churn.csv`  
+**Output Directory:** `../outputs/`
 
 ---
 
-## 🎯 VISUAL BUSINESS QUESTIONS
+## 1. Dataset Schema Brief
 
-The following questions can be answered through visual chart analysis:
+### Dataset Structure
+- **Type:** Tabular (CSV)
+- **Total Records:** 1,000 rows
+- **Total Columns:** 10 fields
+- **Data Quality:** 100% complete (no missing values)
+- **File Size:** 73.8 KB
+- **Encoding:** ASCII
+- **Delimiter:** Comma
 
-1. **What is the overall churn rate distribution?**  
-   → Visual: Pie/Donut chart showing retained vs churned proportions
+### Field Catalog
 
-2. **Which contract types have highest churn rates?**  
-   → Visual: Bar chart comparing churn rates across contract types
+| Field Name | Type | Format | Unique Values | Business Meaning |
+|------------|------|--------|---------------|------------------|
+| `customer_id` | String | Numeric ID | 100 | Unique customer identifier |
+| `age` | Numeric | Integer | 41 | Customer age in years (18-80) |
+| `tenure_months` | Numeric | Integer | 41 | Customer relationship duration (0-72 months) |
+| `monthly_charges` | Numeric | Decimal | 91 | Monthly service charges ($20-$150) |
+| `total_charges` | Numeric | Decimal | 98 | Cumulative lifetime charges ($0-$10,800) |
+| `num_products` | Numeric | Integer | 5 | Number of products/services (1-5) |
+| `num_support_calls` | Numeric | Integer | 5 | Support interactions count (0-5) |
+| `contract_type` | Categorical | String | 3 | Service contract duration |
+| `payment_method` | Categorical | String | 4 | Payment mechanism |
+| `churned` | Binary | Integer | 2 | Churn status (0=Retained, 1=Churned) |
 
-3. **How does support call frequency correlate with churn?**  
-   → Visual: Bar chart showing churn rate by number of support calls
+### Categorical Field Values
 
-4. **Which payment methods show different churn patterns?**  
-   → Visual: Grouped bar chart of churn by payment method
+**contract_type:**
+- Month-to-month (507 customers)
+- One year (300 customers)
+- Two year (193 customers)
 
-5. **How does product ownership affect retention?**  
-   → Visual: Bar chart of churn rate by number of products
+**payment_method:**
+- Credit card (263 customers)
+- Mailed check (259 customers)
+- Electronic (255 customers)
+- Bank transfer (223 customers)
 
-6. **What's the relationship between tenure and churn?**  
-   → Visual: Histogram/distribution showing tenure patterns for churned vs retained
-
-7. **How does age distribution differ between churned and retained customers?**  
-   → Visual: Side-by-side histogram or box plot
-
-8. **What are the monthly charge patterns for churned vs retained?**  
-   → Visual: Box plot or violin plot comparison
-
-9. **How do multiple factors combine to show risk patterns?**  
-   → Visual: Stacked bar showing contract type + product count interaction
-
-10. **What's the demographic overview of our customer base?**  
-    → Visual: Multi-panel dashboard showing age, tenure, charges distributions
-
----
-
-## 📊 CHART SPECIFICATIONS
-
-### CHART 1: Overall Churn Distribution
-**Chart Type:** Pie Chart  
-**Purpose:** Show proportion of churned vs retained customers  
-**Data Required:**
-- Count of churned=0 (Retained)
-- Count of churned=1 (Churned)
-- Calculate percentages
-
-**Visual Specifications:**
-- Colors: Green (#2ecc71) for Retained, Red (#e74c3c) for Churned
-- Labels: Show both count and percentage
-- Title: "Customer Churn Distribution"
-- Legend: Bottom position
-- Size: 600x400px
-
-**Output:** `churn_distribution_pie.png`
+**churned:**
+- 0 = Retained (794 customers)
+- 1 = Churned (206 customers)
 
 ---
 
-### CHART 2: Churn Rate by Contract Type
-**Chart Type:** Bar Chart  
-**Purpose:** Compare churn rates across different contract types  
-**Data Required:**
-- Group by contract_type
-- For each group: count total customers, count churned customers
-- Calculate churn rate percentage for each contract type
+## 2. Visual Business Questions
 
-**Visual Specifications:**
-- X-axis: Contract types (Month-to-month, One year, Two year)
-- Y-axis: Churn Rate (%)
-- Bar Colors: Red gradient based on churn rate intensity
-- Add value labels on top of each bar
-- Title: "Churn Rate by Contract Type"
-- Y-axis range: 0-100%
-- Size: 800x500px
+Based on the schema, here are 8 visual questions that can be answered with charts:
 
-**Output:** `churn_by_contract.png`
+1. **What is the overall churn vs retention distribution?**
+   - Visual: Pie chart showing retained vs churned split
 
----
+2. **How does churn rate vary by contract type?**
+   - Visual: Bar chart comparing churn rates across contract types
 
-### CHART 3: Churn Rate by Support Calls
-**Chart Type:** Bar Chart  
-**Purpose:** Identify correlation between support calls and churn  
-**Data Required:**
-- Group by num_support_calls (0, 1, 2, 3, 4+)
-- For each group: count total, count churned
-- Calculate churn rate percentage
+3. **Which payment methods correlate with higher churn?**
+   - Visual: Horizontal bar chart sorted by churn rate
 
-**Visual Specifications:**
-- X-axis: Number of Support Calls
-- Y-axis: Churn Rate (%)
-- Bar Colors: Color intensity increases with call count (yellow to red gradient)
-- Add value labels on bars
-- Title: "Churn Rate by Number of Support Calls"
-- Highlight 3+ calls as high risk zone
-- Size: 800x500px
+4. **How does customer tenure affect churn probability?**
+   - Visual: Line chart showing churn rate by tenure groups
 
-**Output:** `churn_by_support_calls.png`
+5. **What is the relationship between number of products and churn?**
+   - Visual: Column chart showing churn rate by product count
+
+6. **How does age distribution differ between churned and retained customers?**
+   - Visual: Overlapping histogram comparing age distributions
+
+7. **What is the distribution of monthly charges for churned vs retained?**
+   - Visual: Box plot comparing charge distributions
+
+8. **How do support call patterns relate to churn?**
+   - Visual: Stacked bar chart showing support calls by churn status
 
 ---
 
-### CHART 4: Churn Rate by Payment Method
-**Chart Type:** Grouped Bar Chart  
-**Purpose:** Compare churn patterns across payment methods  
-**Data Required:**
-- Group by payment_method
-- For each method: count total, count churned, count retained
-- Calculate churn rate percentage
+## 3. Chart Specifications (9 Charts)
 
-**Visual Specifications:**
-- X-axis: Payment Methods
-- Y-axis: Customer Count
-- Two bars per method: Churned (red) and Retained (green)
-- Title: "Customer Status by Payment Method"
-- Legend: Top right
-- Size: 900x500px
+### Chart 1: Customer Churn Overview
+**File:** `01_customer_distribution.png`  
+**Type:** Pie chart  
+**Purpose:** Show overall churn vs retention split
 
-**Output:** `churn_by_payment.png`
-
----
-
-### CHART 5: Churn Rate by Number of Products
-**Chart Type:** Bar Chart  
-**Purpose:** Show how product ownership affects retention  
-**Data Required:**
-- Group by num_products (1, 2, 3, 4, 5)
-- For each group: count total, count churned
-- Calculate churn rate percentage
-
-**Visual Specifications:**
-- X-axis: Number of Products
-- Y-axis: Churn Rate (%)
-- Bar Colors: Green gradient (lower churn = darker green)
-- Add value labels on bars
-- Title: "Churn Rate by Product Portfolio Size"
-- Size: 800x500px
-
-**Output:** `churn_by_products.png`
+**Specifications:**
+- **Data:** Group by `churned` field (0 vs 1)
+- **Labels:** "Retained" and "Churned" with percentages
+- **Colors:** Green (#6BCF7F) for Retained, Red (#FF6B6B) for Churned
+- **Explode:** Churned segment by 0.1
+- **Title:** "Customer Churn Overview"
+- **Subtitle:** "1,000 Total Customers"
+- **Size:** 1000x1000 pixels
+- **DPI:** 300
 
 ---
 
-### CHART 6: Tenure Distribution Comparison
-**Chart Type:** Overlapping Histogram  
-**Purpose:** Compare tenure patterns between churned and retained customers  
-**Data Required:**
-- Tenure values for churned=0
-- Tenure values for churned=1
-- Bin size: 5 months
+### Chart 2: Churn Rate by Contract Type
+**File:** `02_churn_by_contract.png`  
+**Type:** Vertical bar chart  
+**Purpose:** Show dramatic difference in churn rates across contract types
 
-**Visual Specifications:**
-- X-axis: Tenure (months)
-- Y-axis: Customer Count
-- Two overlapping histograms: Retained (blue, alpha=0.6), Churned (red, alpha=0.6)
-- Title: "Tenure Distribution: Churned vs Retained Customers"
-- Legend: Top right
-- Size: 900x500px
-
-**Output:** `tenure_distribution.png`
-
----
-
-### CHART 7: Age Distribution Comparison
-**Chart Type:** Box Plot (Side-by-Side)  
-**Purpose:** Show age patterns for churned vs retained customers  
-**Data Required:**
-- Age values for churned=0
-- Age values for churned=1
-
-**Visual Specifications:**
-- X-axis: Customer Status (Retained, Churned)
-- Y-axis: Age
-- Box Colors: Green for Retained, Red for Churned
-- Show median line, quartiles, and outliers
-- Title: "Age Distribution: Churned vs Retained"
-- Size: 700x500px
-
-**Output:** `age_boxplot.png`
+**Specifications:**
+- **X-axis:** Contract type (Month-to-month, One year, Two year)
+- **Y-axis:** Churn rate (percentage)
+- **Data:** Group by `contract_type`, calculate mean of `churned`
+- **Colors:** Red (#FF6B6B) for Month-to-month, Yellow (#FFD93D) for One year, Green (#6BCF7F) for Two year
+- **Labels:** Percentage labels on top of bars, customer count below x-axis
+- **Title:** "Churn Rate by Contract Type"
+- **Subtitle:** "Month-to-month contracts show higher churn"
+- **Grid:** Light gray dashed grid (#EEEEEE)
+- **Size:** 1200x800 pixels
+- **DPI:** 300
 
 ---
 
-### CHART 8: Monthly Charges Distribution
-**Chart Type:** Violin Plot  
-**Purpose:** Compare monthly charge patterns  
-**Data Required:**
-- Monthly_charges values for churned=0
-- Monthly_charges values for churned=1
+### Chart 3: Churn Rate by Payment Method
+**File:** `03_churn_by_payment.png`  
+**Type:** Horizontal bar chart  
+**Purpose:** Compare churn rates across payment methods
 
-**Visual Specifications:**
-- X-axis: Customer Status
-- Y-axis: Monthly Charges ($)
-- Colors: Green for Retained, Red for Churned
-- Show median line
-- Title: "Monthly Charges Distribution: Churned vs Retained"
-- Size: 700x500px
-
-**Output:** `charges_violin.png`
-
----
-
-### CHART 9: Contract Type + Product Count Heatmap
-**Chart Type:** Stacked Bar Chart  
-**Purpose:** Show interaction between contract type and product count  
-**Data Required:**
-- Group by contract_type and num_products
-- Count customers in each combination
-- Separate by churn status
-
-**Visual Specifications:**
-- X-axis: Contract Type
-- Y-axis: Customer Count
-- Stacks: Different colors for each product count (1-5)
-- Title: "Customer Segmentation: Contract Type × Product Count"
-- Legend: Right side
-- Size: 900x600px
-
-**Output:** `contract_product_stack.png`
+**Specifications:**
+- **Y-axis:** Payment method (sorted by churn rate descending)
+- **X-axis:** Churn rate (percentage)
+- **Data:** Group by `payment_method`, calculate mean of `churned`
+- **Colors:** Gradient from red to green based on churn rate
+- **Labels:** Percentage labels at end of each bar
+- **Title:** "Churn Rate by Payment Method"
+- **Subtitle:** "Manual payment methods show higher churn"
+- **Size:** 1200x800 pixels
+- **DPI:** 300
 
 ---
 
-### CHART 10: Dashboard Overview (Multi-Panel)
-**Chart Type:** 2×2 Grid of Small Charts  
-**Purpose:** Executive summary dashboard  
-**Charts Included:**
-1. Top-left: Churn pie chart
-2. Top-right: Contract type churn rates
-3. Bottom-left: Support calls churn rates
-4. Bottom-right: Product count churn rates
+### Chart 4: Churn Rate by Tenure Group
+**File:** `04_churn_by_tenure.png`  
+**Type:** Line chart with markers  
+**Purpose:** Show how churn decreases with tenure
 
-**Visual Specifications:**
-- Overall size: 1200x900px
-- Each subplot: 500x400px
-- Consistent color scheme across all panels
-- Main title: "Customer Churn Analysis Dashboard"
-- Tight layout for clean presentation
-
-**Output:** `dashboard_overview.png`
+**Specifications:**
+- **X-axis:** Tenure groups (0-12, 13-24, 25-36, 37-72 months)
+- **Y-axis:** Churn rate (percentage)
+- **Data:** Create tenure bins using `pd.cut()` on `tenure_months`, then group and calculate mean of `churned`
+- **Bins:** `[0, 12, 24, 36, 72]` with labels `['0-12', '13-24', '25-36', '37-72']`
+- **Line Color:** Blue (#4A90E2) with circular markers
+- **Labels:** Percentage labels above each point
+- **Highlight:** Emphasize 0-12 months group (critical period) with different marker style
+- **Title:** "Churn Rate by Customer Tenure"
+- **Subtitle:** "First year is critical period"
+- **Size:** 1200x800 pixels
+- **DPI:** 300
 
 ---
 
-## 🛠️ TASK-BASED IMPLEMENTATION PLAN (task.py Blueprint)
+### Chart 5: Churn Rate by Number of Products
+**File:** `05_churn_by_products.png`  
+**Type:** Column chart  
+**Purpose:** Show relationship between product diversification and churn
 
-This is a step-by-step blueprint for the developer to implement ALL charts.
+**Specifications:**
+- **X-axis:** Number of products (1, 2, 3, 4, 5)
+- **Y-axis:** Churn rate (percentage)
+- **Data:** Group by `num_products`, calculate mean of `churned`
+- **Color:** Purple (#9B59B6)
+- **Labels:** Percentage labels on bars, customer count below x-axis
+- **Title:** "Churn Rate by Product Count"
+- **Subtitle:** "3-4 products show lowest churn"
+- **Size:** 1200x800 pixels
+- **DPI:** 300
+
+---
+
+### Chart 6: Age Distribution Comparison
+**File:** `06_age_distribution.png`  
+**Type:** Overlapping histogram  
+**Purpose:** Compare age distributions between churned and retained
+
+**Specifications:**
+- **X-axis:** Age (bins: 18-30, 31-40, 41-50, 51-60, 61-70, 71-80)
+- **Y-axis:** Customer count
+- **Data:** Filter by `churned` (0 vs 1), create histogram of `age`
+- **Bins:** `[18, 30, 40, 50, 60, 70, 80]`
+- **Colors:** Red (#FF6B6B) for Churned (alpha=0.7), Green (#6BCF7F) for Retained (alpha=0.7)
+- **Legend:** Show both groups with labels
+- **Title:** "Age Distribution: Churned vs Retained"
+- **Subtitle:** "Comparison of customer age patterns"
+- **Size:** 1200x800 pixels
+- **DPI:** 300
+
+---
+
+### Chart 7: Monthly Charges Distribution
+**File:** `07_charges_distribution.png`  
+**Type:** Box plot  
+**Purpose:** Compare monthly charges between churned and retained
+
+**Specifications:**
+- **X-axis:** Churn status (Retained, Churned)
+- **Y-axis:** Monthly charges ($)
+- **Data:** Group by `churned`, plot `monthly_charges` as box plot
+- **Colors:** Green (#6BCF7F) for Retained, Red (#FF6B6B) for Churned
+- **Title:** "Monthly Charges Distribution"
+- **Subtitle:** "Comparison by churn status"
+- **Size:** 1200x800 pixels
+- **DPI:** 300
+
+---
+
+### Chart 8: Support Calls vs Churn
+**File:** `08_support_calls_churn.png`  
+**Type:** Stacked bar chart  
+**Purpose:** Show support call patterns by churn status
+
+**Specifications:**
+- **X-axis:** Number of support calls (0, 1, 2, 3, 4, 5)
+- **Y-axis:** Customer count
+- **Data:** Group by `num_support_calls` and `churned`, count customers
+- **Colors:** Stacked bars with Green (#6BCF7F) for Retained, Red (#FF6B6B) for Churned
+- **Title:** "Support Calls Distribution by Churn Status"
+- **Subtitle:** "Customer support interaction patterns"
+- **Size:** 1200x800 pixels
+- **DPI:** 300
+
+---
+
+### Chart 9: Comprehensive Dashboard
+**File:** `09_churn_dashboard.png`  
+**Type:** 2x2 subplot grid  
+**Purpose:** Comprehensive view of all key metrics
+
+**Subplots:**
+1. **Top-left:** Churn by Contract (bar chart from Chart 2)
+2. **Top-right:** Churn by Tenure (line chart from Chart 4)
+3. **Bottom-left:** Churn by Products (column chart from Chart 5)
+4. **Bottom-right:** Key metrics table (text summary with counts)
+
+**Dashboard Specifications:**
+- **Figure Size:** 16x12 inches
+- **Main Title:** "Customer Churn Analysis Dashboard"
+- **Date Stamp:** Footer with generation date
+- **Color Scheme:** Consistent across all subplots
+- **DPI:** 300
+
+---
+
+## 4. Task-Based Implementation Plan
 
 ### TASK 1: Setup & Configuration
-**Purpose:** Initialize environment and define constants
+**Subtask 1.1:** Import required libraries
+- `pandas` for data manipulation
+- `matplotlib.pyplot` for charting
+- `seaborn` for enhanced styling
+- `numpy` for numerical operations
+- `pathlib.Path` for file paths
 
-**Subtasks:**
-- Task 1.1: Import required libraries (pandas, matplotlib, seaborn, numpy)
-- Task 1.2: Define color palette constants (CHURN_RED, RETAIN_GREEN, etc.)
-- Task 1.3: Define output directory path (`outputs/`)
-- Task 1.4: Set matplotlib style and defaults (figure size, font sizes)
-- Task 1.5: Create output directory if it doesn't exist
+**Subtask 1.2:** Define constants
+- `INPUT_FILE = '../data/customer_churn.csv'`
+- `OUTPUT_DIR = '../outputs/'`
+- `DPI = 300`
+- Color palette dictionary:
+  ```python
+  colors = {
+      'danger': '#FF6B6B',      # Red for high churn
+      'warning': '#FFD93D',     # Yellow for medium
+      'success': '#6BCF7F',     # Green for low churn
+      'primary': '#4A90E2',     # Blue for neutral
+      'secondary': '#9B59B6'    # Purple for accent
+  }
+  ```
 
-**Expected Code Structure:**
+**Subtask 1.3:** Create output directory
+- Check if `OUTPUT_DIR` exists
+- Create directory if it doesn't exist using `Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)`
+
+---
+
+### TASK 2: Data Loading Function
+**Subtask 2.1:** Create `load_data()` function
+- Input: None (uses constant `INPUT_FILE`)
+- Read CSV file using `pd.read_csv(INPUT_FILE)`
+- Convert string columns to numeric: `age`, `tenure_months`, `monthly_charges`, `total_charges`, `num_products`, `num_support_calls`, `churned`
+- Use `pd.to_numeric()` with `errors='coerce'`
+- Return DataFrame
+
+---
+
+### TASK 3: Chart Generation Functions
+
+**TASK 3.1:** Implement `create_customer_distribution(df)`
+- Group by `churned` field, count customers
+- Create pie chart with explode effect (churned segment: 0.1)
+- Apply colors (green for retained, red for churned)
+- Add title, subtitle, labels with percentages
+- Save as `01_customer_distribution.png` with 300 DPI
+- Close figure using `plt.close()`
+
+**TASK 3.2:** Implement `create_churn_by_contract(df)`
+- Group by `contract_type`, calculate mean of `churned` (this gives churn rate)
+- Create vertical bar chart
+- Apply color scheme (red for Month-to-month, yellow for One year, green for Two year)
+- Add percentage labels on top of bars
+- Add customer count labels below x-axis
+- Add grid (light gray, dashed)
+- Save as `02_churn_by_contract.png` with 300 DPI
+- Close figure
+
+**TASK 3.3:** Implement `create_churn_by_payment(df)`
+- Group by `payment_method`, calculate mean of `churned`
+- Sort by churn rate descending
+- Create horizontal bar chart
+- Apply color gradient from red to green based on churn rate
+- Add percentage labels at end of each bar
+- Save as `03_churn_by_payment.png` with 300 DPI
+- Close figure
+
+**TASK 3.4:** Implement `create_churn_by_tenure(df)`
+- Create tenure bins: `pd.cut(df['tenure_months'], bins=[0, 12, 24, 36, 72], labels=['0-12', '13-24', '25-36', '37-72'])`
+- Group by tenure bins, calculate mean of `churned`
+- Create line chart with circular markers
+- Use blue color (#4A90E2)
+- Highlight 0-12 months group with different marker style (larger, different color)
+- Add percentage labels above each point
+- Save as `04_churn_by_tenure.png` with 300 DPI
+- Close figure
+
+**TASK 3.5:** Implement `create_churn_by_products(df)`
+- Group by `num_products`, calculate mean of `churned`
+- Create column chart
+- Apply purple color (#9B59B6)
+- Add percentage labels on bars
+- Add customer count labels below x-axis
+- Save as `05_churn_by_products.png` with 300 DPI
+- Close figure
+
+**TASK 3.6:** Implement `create_age_distribution(df)`
+- Create age bins: `pd.cut(df['age'], bins=[18, 30, 40, 50, 60, 70, 80])`
+- Filter by `churned` (0 and 1 separately)
+- Create overlapping histograms with transparency (alpha=0.7)
+- Apply colors (red for churned, green for retained)
+- Add legend with labels
+- Save as `06_age_distribution.png` with 300 DPI
+- Close figure
+
+**TASK 3.7:** Implement `create_charges_distribution(df)`
+- Group by `churned`, extract `monthly_charges` values
+- Create box plot for each group
+- Apply colors (green for retained, red for churned)
+- Add title and labels
+- Save as `07_charges_distribution.png` with 300 DPI
+- Close figure
+
+**TASK 3.8:** Implement `create_support_calls_churn(df)`
+- Group by `num_support_calls` and `churned`, count customers
+- Create stacked bar chart
+- Apply colors (green for retained, red for churned)
+- Add title and labels
+- Save as `08_support_calls_churn.png` with 300 DPI
+- Close figure
+
+**TASK 3.9:** Implement `create_dashboard(df)`
+- Create 2x2 subplot grid (figure size 16x12 inches)
+- Subplot 1 (top-left): Call `create_churn_by_contract()` logic inline
+- Subplot 2 (top-right): Call `create_churn_by_tenure()` logic inline
+- Subplot 3 (bottom-left): Call `create_churn_by_products()` logic inline
+- Subplot 4 (bottom-right): Create text table with key metrics (total customers, churned count, retained count)
+- Add main title "Customer Churn Analysis Dashboard"
+- Add date stamp in footer
+- Save as `09_churn_dashboard.png` with 300 DPI
+- Close figure
+
+---
+
+### TASK 4: Main Execution Function
+**Subtask 4.1:** Create `main()` function
+- Load data using `load_data()`
+- Call all 9 chart functions in sequence (3.1 through 3.9)
+- Print completion message: "All 9 visualizations created successfully!"
+- Print file count: "Generated 9 chart files in ../outputs/"
+
+**Subtask 4.2:** Add entry point
+- `if __name__ == '__main__': main()`
+
+---
+
+### TASK 5: Quality Assurance
+**Subtask 5.1:** Verify all charts use 300 DPI
+**Subtask 5.2:** Verify consistent color palette across charts
+**Subtask 5.3:** Verify all 9 output files are created
+**Subtask 5.4:** Test execution time (should be < 1 minute)
+
+---
+
+## 5. APPENDIX: Data Dictionary
+
+### Field Specifications
+
+| Field | Type | Format | Range/Values | Business Meaning | Usage in Charts |
+|-------|------|--------|--------------|------------------|-----------------|
+| `customer_id` | String | Numeric ID | 1-100 | Unique identifier | Not used in charts |
+| `age` | Numeric | Integer | 18-80 | Customer age | Chart 6 (distribution) |
+| `tenure_months` | Numeric | Integer | 0-72 | Relationship duration | Chart 4 (tenure groups) |
+| `monthly_charges` | Numeric | Decimal | $20-$150 | Monthly fee | Chart 7 (distribution) |
+| `total_charges` | Numeric | Decimal | $0-$10,800 | Lifetime value | Not used in charts |
+| `num_products` | Numeric | Integer | 1-5 | Product count | Chart 5 (churn by products) |
+| `num_support_calls` | Numeric | Integer | 0-5 | Support interactions | Chart 8 (support calls) |
+| `contract_type` | Categorical | String | Month-to-month, One year, Two year | Contract duration | Chart 2 (churn by contract) |
+| `payment_method` | Categorical | String | Credit card, Mailed check, Electronic, Bank transfer | Payment type | Chart 3 (churn by payment) |
+| `churned` | Binary | Integer | 0 (Retained), 1 (Churned) | Churn status | All charts (target variable) |
+
+---
+
+## Technical Requirements
+
+### Python Libraries
 ```python
-# Task 1: Imports & Configuration
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 from pathlib import Path
-
-# Color scheme
-CHURN_RED = '#e74c3c'
-RETAIN_GREEN = '#2ecc71'
-...
-
-# Output configuration
-OUTPUT_DIR = Path('outputs')
-OUTPUT_DIR.mkdir(exist_ok=True)
 ```
 
----
-
-### TASK 2: Data Loading & Validation
-**Purpose:** Load dataset and verify structure
-
-**Subtasks:**
-- Task 2.1: Create `load_data()` function
-- Task 2.2: Read CSV file into DataFrame
-- Task 2.3: Verify expected columns exist
-- Task 2.4: Check for missing values
-- Task 2.5: Convert data types if needed (ensure numeric columns are numeric)
-- Task 2.6: Print data summary (shape, columns, sample)
-- Task 2.7: Return validated DataFrame
-
-**Expected Function Signature:**
-```python
-def load_data(filepath: str) -> pd.DataFrame:
-    """Load and validate customer churn dataset"""
-    # Implementation here
-    return df
-```
-
----
-
-### TASK 3: Chart Generation Functions
-**Purpose:** Create individual chart generation functions
-
-#### Task 3.1: Overall Churn Distribution (Pie Chart)
-**Function:** `create_churn_pie_chart(df)`
-- Calculate churn counts
-- Create pie chart with specified colors
-- Add percentage labels
-- Save to `outputs/churn_distribution_pie.png`
-
-#### Task 3.2: Churn by Contract Type (Bar Chart)
-**Function:** `create_contract_churn_chart(df)`
-- Group by contract_type
-- Calculate churn rate for each group
-- Create bar chart with red gradient
-- Add value labels on bars
-- Save to `outputs/churn_by_contract.png`
-
-#### Task 3.3: Churn by Support Calls (Bar Chart)
-**Function:** `create_support_calls_chart(df)`
-- Group by num_support_calls
-- Calculate churn rates
-- Create bar chart with yellow-to-red gradient
-- Highlight high-risk zone (3+ calls)
-- Save to `outputs/churn_by_support_calls.png`
-
-#### Task 3.4: Churn by Payment Method (Grouped Bar)
-**Function:** `create_payment_method_chart(df)`
-- Group by payment_method and churned
-- Count customers in each group
-- Create grouped bar chart (churned vs retained)
-- Save to `outputs/churn_by_payment.png`
-
-#### Task 3.5: Churn by Products (Bar Chart)
-**Function:** `create_products_chart(df)`
-- Group by num_products
-- Calculate churn rates
-- Create bar chart with green gradient
-- Save to `outputs/churn_by_products.png`
-
-#### Task 3.6: Tenure Distribution (Histogram)
-**Function:** `create_tenure_histogram(df)`
-- Separate tenure data by churn status
-- Create overlapping histograms
-- Use semi-transparent colors
-- Save to `outputs/tenure_distribution.png`
-
-#### Task 3.7: Age Distribution (Box Plot)
-**Function:** `create_age_boxplot(df)`
-- Prepare age data for churned and retained
-- Create side-by-side box plots
-- Use specified colors
-- Save to `outputs/age_boxplot.png`
-
-#### Task 3.8: Monthly Charges (Violin Plot)
-**Function:** `create_charges_violin(df)`
-- Prepare monthly_charges by churn status
-- Create violin plot comparison
-- Save to `outputs/charges_violin.png`
-
-#### Task 3.9: Contract × Product Interaction (Stacked Bar)
-**Function:** `create_contract_product_stack(df)`
-- Group by contract_type and num_products
-- Count combinations
-- Create stacked bar chart
-- Save to `outputs/contract_product_stack.png`
-
-#### Task 3.10: Dashboard Overview (Multi-Panel)
-**Function:** `create_dashboard(df)`
-- Create 2×2 subplot grid
-- Call mini versions of charts 1, 2, 3, 5
-- Arrange in grid layout
-- Save to `outputs/dashboard_overview.png`
-
-**Expected Structure for Each Function:**
-```python
-def create_churn_pie_chart(df: pd.DataFrame) -> str:
-    """Generate overall churn distribution pie chart"""
-    # Data preparation
-    # Chart creation
-    # Styling
-    # Save file
-    return output_path
-```
-
----
-
-### TASK 4: Main Execution Function
-**Purpose:** Orchestrate all chart generation
-
-**Subtasks:**
-- Task 4.1: Create `main()` function
-- Task 4.2: Print execution start message
-- Task 4.3: Call `load_data()` function
-- Task 4.4: Call each chart function sequentially (Task 3.1 through 3.10)
-- Task 4.5: Track which charts were successfully created
-- Task 4.6: Print summary of generated charts
-- Task 4.7: Handle any errors gracefully (try/except blocks)
-
-**Expected Structure:**
-```python
-def main():
-    """Main execution function"""
-    print("Starting Customer Churn Chart Generation...")
-    
-    # Load data
-    df = load_data('data/customer_churn.csv')
-    
-    # Generate all charts
-    charts_created = []
-    
-    try:
-        charts_created.append(create_churn_pie_chart(df))
-        charts_created.append(create_contract_churn_chart(df))
-        # ... call all chart functions
-    except Exception as e:
-        print(f"Error: {e}")
-    
-    print(f"✓ Generated {len(charts_created)} charts")
-    
-if __name__ == "__main__":
-    main()
-```
-
----
-
-### TASK 5: Quality Assurance & Documentation
-**Purpose:** Ensure code quality and maintainability
-
-**Subtasks:**
-- Task 5.1: Add docstrings to all functions
-- Task 5.2: Add inline comments for complex logic
-- Task 5.3: Verify all charts are saved to correct paths
-- Task 5.4: Test with actual dataset
-- Task 5.5: Verify output file naming matches specification
-- Task 5.6: Check color consistency across all charts
-- Task 5.7: Ensure all titles and labels are correctly formatted
-
-**Implementation Notes:**
-- Each function should have a docstring explaining purpose, parameters, and return value
-- Complex calculations should have explanatory comments
-- Use consistent naming conventions
-- Handle edge cases (empty groups, division by zero)
-
----
-
-## 📊 EXPECTED OUTPUTS
-
-When the developer implements this specification, the following files should be generated:
-
-```
-outputs/
-├── churn_distribution_pie.png         # Chart 1
-├── churn_by_contract.png              # Chart 2
-├── churn_by_support_calls.png         # Chart 3
-├── churn_by_payment.png               # Chart 4
-├── churn_by_products.png              # Chart 5
-├── tenure_distribution.png            # Chart 6
-├── age_boxplot.png                    # Chart 7
-├── charges_violin.png                 # Chart 8
-├── contract_product_stack.png         # Chart 9
-└── dashboard_overview.png             # Chart 10
-```
-
-**Total Charts:** 10 visualization files
-
----
-
-## 🎨 VISUAL DESIGN GUIDELINES
+### Style Guidelines
+- **Font:** Arial or Helvetica
+- **Title font size:** 16pt (bold)
+- **Subtitle font size:** 12pt (italic)
+- **Label font size:** 10pt
+- **Grid:** Light gray (#EEEEEE), dashed
+- **Figure DPI:** 300 for high quality
+- **Background:** White
+- **Save format:** PNG with tight layout
 
 ### Color Palette
-- **Churn (Negative):** #e74c3c (Red)
-- **Retained (Positive):** #2ecc71 (Green)
-- **Neutral/Info:** #3498db (Blue)
-- **Warning:** #f39c12 (Orange)
-- **Gradients:** Use color intensity to show severity/magnitude
-
-### Typography
-- **Chart Titles:** 14pt, Bold
-- **Axis Labels:** 11pt, Regular
-- **Value Labels:** 9pt, Regular
-- **Legend:** 10pt, Regular
-
-### Layout
-- Consistent figure sizes per chart type
-- White background with light gray grid
-- Clear axis labels with units
-- Legends placed to not obscure data
-- Adequate spacing between elements
+```python
+colors = {
+    'danger': '#FF6B6B',      # Red for high churn
+    'warning': '#FFD93D',     # Yellow for medium
+    'success': '#6BCF7F',     # Green for low churn
+    'primary': '#4A90E2',     # Blue for neutral
+    'secondary': '#9B59B6'    # Purple for accent
+}
+```
 
 ---
 
-## 🚫 ARCHITECT ROLE BOUNDARIES
+## Success Criteria
 
-**This specification provides:**
-- ✅ Business questions to answer
-- ✅ Chart types and visual specifications
-- ✅ Data grouping and aggregation requirements
-- ✅ Color schemes and styling guidelines
-- ✅ Task-based implementation blueprint
-- ✅ Expected output structure
-
-**This specification does NOT include:**
-- ❌ Actual Python code implementation
-- ❌ Statistical calculations or analysis
-- ❌ Machine learning or predictive modeling
-- ❌ Data cleaning or transformation code
-- ❌ Feature engineering
-- ❌ Missing value handling
-
-**Next Step:** Hand this specification to `@data-dev` agent to implement the code in `task.py`
+The visualization task is complete when:
+1. ✅ All 9 chart files are generated in `../outputs/`
+2. ✅ Charts match the specifications above
+3. ✅ All percentages are calculated correctly
+4. ✅ Color scheme is consistently applied
+5. ✅ Charts are high resolution (300 DPI)
+6. ✅ Script runs without errors
 
 ---
 
-## 📚 APPENDIX: DATA DICTIONARY
-
-### Customer Identification
-**customer_id**
-- Type: Numeric (Integer)
-- Description: Unique customer identifier
-- Range: 1-100 (appears to be customer segment IDs, with multiple records per ID)
-- Unique Values: 100
-- Business Use: Customer tracking and grouping
-
----
-
-### Demographic Fields
-
-**age**
-- Type: Numeric (Integer)
-- Description: Customer age in years
-- Range: 18-80 years (based on unique count of 41)
-- Unique Values: 41
-- Business Use: Age-based segmentation, demographic analysis
-- Notes: Representative of adult customer base
-
-**tenure_months**
-- Type: Numeric (Integer)
-- Description: Number of months customer has been with company
-- Range: 1-40+ months (based on unique count of 41)
-- Unique Values: 41
-- Business Use: Loyalty analysis, retention patterns
-- Notes: Critical field for churn prediction - longer tenure typically indicates loyalty
-
----
-
-### Financial Fields
-
-**monthly_charges**
-- Type: Numeric (Float)
-- Description: Current monthly billing amount in dollars
-- Range: Approximately $25-$120 (inferred from sample values)
-- Unique Values: 91 distinct price points
-- Business Use: Revenue analysis, pricing tier identification
-- Format: Decimal values with high precision
-- Notes: Continuous variable, useful for revenue segmentation
-
-**total_charges**
-- Type: Numeric (Float)
-- Description: Cumulative total amount customer has paid to date
-- Range: Wide range from $50 to $4000+ (inferred)
-- Unique Values: 98 distinct values
-- Business Use: Customer lifetime value calculation, spending pattern analysis
-- Formula: Approximately `monthly_charges × tenure_months` (may vary due to price changes)
-- Notes: Indicator of customer value and engagement
-
----
-
-### Product & Service Usage
-
-**num_products**
-- Type: Numeric (Integer)
-- Description: Count of products/services customer has subscribed to
-- Range: 1-5 products
-- Unique Values: 5 (1, 2, 3, 4, 5)
-- Business Use: Cross-sell effectiveness, product bundle analysis
-- Distribution: Varies (see categorical interpretation)
-- Notes: Higher product count may indicate higher engagement and lower churn risk
-
-**num_support_calls**
-- Type: Numeric (Integer)
-- Description: Number of customer support interactions
-- Range: 0-4+ calls
-- Unique Values: 5 levels (0, 1, 2, 3, 4+)
-- Business Use: Service quality indicator, churn risk signal
-- Warning Sign: High support call counts (3-4+) may indicate dissatisfaction
-- Notes: Critical field for identifying at-risk customers
-
----
-
-### Contract & Payment Fields
-
-**contract_type**
-- Type: Categorical (String)
-- Description: Type of contract customer has signed
-- Categories: 
-  - "Month-to-month" (507 customers, 50.7%)
-  - "One year" (300 customers, 30.0%)
-  - "Two year" (193 customers, 19.3%)
-- Unique Values: 3
-- Business Use: Commitment level analysis, contract optimization
-- Business Impact: Critical churn predictor - month-to-month contracts typically have higher churn
-- Notes: Imbalanced distribution with majority on flexible contracts
-
-**payment_method**
-- Type: Categorical (String)
-- Description: How customer pays their bill
-- Categories:
-  - "Credit card" (263 customers, 26.3%)
-  - "Mailed check" (259 customers, 25.9%)
-  - "Electronic" (255 customers, 25.5%)
-  - "Bank transfer" (223 customers, 22.3%)
-- Unique Values: 4
-- Business Use: Payment processing analysis, friction point identification
-- Distribution: Relatively balanced across all methods
-- Notes: Payment method may correlate with customer demographics and tech-savviness
-
----
-
-### Target Variable
-
-**churned**
-- Type: Binary (Integer)
-- Description: Whether customer has churned (left the service)
-- Values:
-  - 0 = Retained/Active (794 customers, 79.4%)
-  - 1 = Churned/Inactive (206 customers, 20.6%)
-- Unique Values: 2
-- Business Use: Target variable for churn prediction, retention analysis
-- Class Balance: Imbalanced (approximately 4:1 ratio)
-- Notes: This is the outcome variable that all other fields help predict
-
----
-
-### Data Quality Summary
-- **Missing Values:** 0 across all fields ✅
-- **Total Records:** 1,000 customer records
-- **Total Fields:** 10 columns
-- **Data Integrity:** High quality, ready for analysis
-- **Encoding:** ASCII (simple, no special characters)
-
----
-
-### Business Context Notes
-
-**Churn Rate:** 20.6% overall churn rate indicates moderate customer turnover
-
-**Key Relationships to Explore:**
-- Contract type → Churn (likely strong relationship)
-- Support calls → Churn (high call counts = risk signal)
-- Tenure → Churn (longer tenure = more stable)
-- Product count → Churn (more products = more "stickiness")
-
-**Segmentation Opportunities:**
-- High-value customers (high total_charges, multiple products, long tenure)
-- At-risk customers (month-to-month, high support calls, short tenure)
-- Stable customers (long contracts, low support calls, multiple products)
-
----
-
-**END OF SPECIFICATION**
-
-This document provides complete visual specification for chart development.  
-Implementation → `@data-dev` agent  
-Execution → `@run-agent`
+**Specification Version:** 1.0  
+**Last Updated:** January 2, 2026  
+**Status:** Ready for implementation
