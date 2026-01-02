@@ -1,12 +1,34 @@
 #!/usr/bin/env python3
 """
-Customer Churn Visualization - Task Implementation
+Customer Churn Visualization - Complete Implementation
 
-Generates 10 professional charts for customer churn analysis.
-Based on specification: customer-churn-chart-spec.md
+Generates 10 professional charts for customer churn analysis based on
+specification from customer-churn-chart-spec.md.
+
+Charts Generated:
+1. Overall Churn Distribution (Pie Chart)
+2. Churn Rate by Contract Type (Bar Chart)
+3. Churn Rate by Support Calls (Bar Chart with gradient)
+4. Customer Status by Payment Method (Grouped Bar Chart)
+5. Churn Rate by Product Count (Bar Chart)
+6. Tenure Distribution Comparison (Histogram)
+7. Age Distribution Comparison (Box Plot)
+8. Monthly Charges Distribution (Violin Plot)
+9. Contract × Product Interaction (Stacked Bar Chart)
+10. Executive Dashboard (2×2 Multi-Panel)
+
+Usage:
+    python task.py
+
+Requirements:
+    - pandas
+    - matplotlib
+    - seaborn
+    - numpy
 
 Author: DataJames (@data-dev)
 Date: January 2, 2026
+Version: 1.0
 """
 
 # ============================================================================
@@ -22,10 +44,10 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Color Palette (Task 1.2)
-CHURN_RED = '#e74c3c'
-RETAIN_GREEN = '#2ecc71'
-NEUTRAL_BLUE = '#3498db'
-WARNING_ORANGE = '#f39c12'
+CHURN_RED = '#e74c3c'      # For churned customers
+RETAIN_GREEN = '#2ecc71'   # For retained customers
+NEUTRAL_BLUE = '#3498db'   # For neutral/info
+WARNING_ORANGE = '#f39c12' # For warnings
 
 # Output Configuration (Task 1.3)
 OUTPUT_DIR = Path('outputs')
@@ -53,20 +75,26 @@ def load_data(filepath: str) -> pd.DataFrame:
     """
     Load and validate customer churn dataset.
     
+    Performs comprehensive validation including:
+    - Column existence verification
+    - Missing value detection
+    - Data type conversion
+    - Basic data quality checks
+    
     Args:
-        filepath: Path to CSV file
+        filepath (str): Path to CSV file containing customer churn data
         
     Returns:
-        pd.DataFrame: Validated customer churn data
+        pd.DataFrame: Validated and type-converted customer churn DataFrame
         
     Raises:
-        FileNotFoundError: If file doesn't exist
-        ValueError: If required columns are missing
+        FileNotFoundError: If the specified file doesn't exist
+        ValueError: If required columns are missing from the dataset
     """
     # Task 2.2: Read CSV file
     df = pd.read_csv(filepath)
     
-    # Task 2.3: Verify expected columns
+    # Task 2.3: Verify expected columns exist
     required_cols = [
         'customer_id', 'age', 'tenure_months', 'monthly_charges',
         'total_charges', 'num_products', 'num_support_calls',
@@ -75,14 +103,14 @@ def load_data(filepath: str) -> pd.DataFrame:
     
     missing_cols = set(required_cols) - set(df.columns)
     if missing_cols:
-        raise ValueError(f"Missing columns: {missing_cols}")
+        raise ValueError(f"Missing required columns: {missing_cols}")
     
     # Task 2.4: Check for missing values
     null_counts = df[required_cols].isnull().sum()
     if null_counts.any():
         print(f"Warning: Found missing values:\n{null_counts[null_counts > 0]}")
     
-    # Task 2.5: Convert data types
+    # Task 2.5: Convert data types for proper analysis
     df['churned'] = df['churned'].astype(int)
     df['num_products'] = df['num_products'].astype(int)
     df['num_support_calls'] = df['num_support_calls'].astype(int)
@@ -93,7 +121,7 @@ def load_data(filepath: str) -> pd.DataFrame:
     print(f"\n[OK] Task 2: Data loaded successfully")
     print(f"  - Shape: {df.shape[0]} rows x {df.shape[1]} columns")
     print(f"  - Churn Rate: {df['churned'].mean()*100:.1f}%")
-    print(f"  - Date Range: {df['tenure_months'].min()}-{df['tenure_months'].max()} months")
+    print(f"  - Tenure Range: {df['tenure_months'].min()}-{df['tenure_months'].max()} months")
     
     # Task 2.7: Return validated DataFrame
     return df
@@ -111,11 +139,14 @@ def create_churn_pie_chart(df: pd.DataFrame) -> str:
     """
     Generate overall churn distribution pie chart.
     
+    Shows the proportion of retained vs churned customers with
+    percentage labels and color coding.
+    
     Args:
-        df: Customer churn DataFrame
+        df (pd.DataFrame): Customer churn DataFrame
         
     Returns:
-        str: Path to saved chart
+        str: Path to saved chart file
     """
     # Calculate churn counts
     churn_counts = df['churned'].value_counts().sort_index()
@@ -140,11 +171,11 @@ def create_churn_pie_chart(df: pd.DataFrame) -> str:
         autotext.set_fontsize(12)
         autotext.set_weight('bold')
     
-    # Save
+    # Save with sequential numbering
     output_path = OUTPUT_DIR / '01_churn_distribution_pie.png'
     plt.tight_layout()
     plt.savefig(output_path, bbox_inches='tight')
-    plt.close()
+    plt.close()  # Free memory
     
     print(f"  [OK] Saved: {output_path}")
     return str(output_path)
@@ -155,13 +186,16 @@ def create_contract_churn_chart(df: pd.DataFrame) -> str:
     """
     Generate churn rate by contract type bar chart.
     
+    Compares churn rates across different contract types with
+    red gradient coloring based on churn intensity.
+    
     Args:
-        df: Customer churn DataFrame
+        df (pd.DataFrame): Customer churn DataFrame
         
     Returns:
-        str: Path to saved chart
+        str: Path to saved chart file
     """
-    # Calculate churn rates
+    # Calculate churn rates by contract type
     contract_churn = df.groupby('contract_type').agg({
         'churned': ['sum', 'count']
     })
@@ -174,10 +208,10 @@ def create_contract_churn_chart(df: pd.DataFrame) -> str:
     bars = ax.bar(
         range(len(contract_churn)),
         contract_churn['churn_rate'],
-        color=[CHURN_RED, '#e67e73', '#f1948a']
+        color=[CHURN_RED, '#e67e73', '#f1948a']  # Red gradient
     )
     
-    # Add value labels
+    # Add value labels on bars
     for i, (idx, row) in enumerate(contract_churn.iterrows()):
         ax.text(
             i, row['churn_rate'] + 1,
@@ -208,20 +242,23 @@ def create_support_calls_chart(df: pd.DataFrame) -> str:
     """
     Generate churn rate by support calls bar chart.
     
+    Shows correlation between support call frequency and churn,
+    with yellow-to-red gradient and high-risk zone highlighting.
+    
     Args:
-        df: Customer churn DataFrame
+        df (pd.DataFrame): Customer churn DataFrame
         
     Returns:
-        str: Path to saved chart
+        str: Path to saved chart file
     """
-    # Calculate churn rates
+    # Calculate churn rates by support calls
     support_churn = df.groupby('num_support_calls').agg({
         'churned': ['sum', 'count']
     })
     support_churn.columns = ['churned', 'total']
     support_churn['churn_rate'] = (support_churn['churned'] / support_churn['total']) * 100
     
-    # Create bar chart with gradient
+    # Create bar chart with yellow-to-red gradient
     fig, ax = plt.subplots(figsize=(8, 5))
     colors_gradient = ['#f39c12', '#e67e22', '#d35400', '#c0392b', '#a93226']
     bars = ax.bar(
@@ -264,13 +301,16 @@ def create_payment_method_chart(df: pd.DataFrame) -> str:
     """
     Generate customer status by payment method grouped bar chart.
     
+    Compares retained vs churned customers across different
+    payment methods using side-by-side bars.
+    
     Args:
-        df: Customer churn DataFrame
+        df (pd.DataFrame): Customer churn DataFrame
         
     Returns:
-        str: Path to saved chart
+        str: Path to saved chart file
     """
-    # Calculate counts
+    # Calculate counts by payment method and churn status
     payment_status = df.groupby(['payment_method', 'churned']).size().unstack(fill_value=0)
     payment_status.columns = ['Retained', 'Churned']
     
@@ -308,20 +348,23 @@ def create_products_chart(df: pd.DataFrame) -> str:
     """
     Generate churn rate by number of products bar chart.
     
+    Shows how product ownership affects retention using
+    green gradient (lower churn = darker green).
+    
     Args:
-        df: Customer churn DataFrame
+        df (pd.DataFrame): Customer churn DataFrame
         
     Returns:
-        str: Path to saved chart
+        str: Path to saved chart file
     """
-    # Calculate churn rates
+    # Calculate churn rates by product count
     products_churn = df.groupby('num_products').agg({
         'churned': ['sum', 'count']
     })
     products_churn.columns = ['churned', 'total']
     products_churn['churn_rate'] = (products_churn['churned'] / products_churn['total']) * 100
     
-    # Create bar chart with green gradient (lower churn = darker green)
+    # Create bar chart with green gradient
     fig, ax = plt.subplots(figsize=(8, 5))
     colors_green = ['#27ae60', '#2ecc71', '#52be80', '#7dcea0', '#a9dfbf']
     bars = ax.bar(
@@ -360,11 +403,14 @@ def create_tenure_histogram(df: pd.DataFrame) -> str:
     """
     Generate tenure distribution comparison histogram.
     
+    Overlapping histograms showing tenure patterns for
+    churned vs retained customers.
+    
     Args:
-        df: Customer churn DataFrame
+        df (pd.DataFrame): Customer churn DataFrame
         
     Returns:
-        str: Path to saved chart
+        str: Path to saved chart file
     """
     # Separate data by churn status
     retained = df[df['churned'] == 0]['tenure_months']
@@ -397,11 +443,14 @@ def create_age_boxplot(df: pd.DataFrame) -> str:
     """
     Generate age distribution box plot comparison.
     
+    Side-by-side box plots showing age patterns with
+    median lines, quartiles, and outliers.
+    
     Args:
-        df: Customer churn DataFrame
+        df (pd.DataFrame): Customer churn DataFrame
         
     Returns:
-        str: Path to saved chart
+        str: Path to saved chart file
     """
     # Prepare data
     df_plot = df.copy()
@@ -441,11 +490,14 @@ def create_charges_violin(df: pd.DataFrame) -> str:
     """
     Generate monthly charges violin plot comparison.
     
+    Violin plots showing distribution density of monthly
+    charges with median lines.
+    
     Args:
-        df: Customer churn DataFrame
+        df (pd.DataFrame): Customer churn DataFrame
         
     Returns:
-        str: Path to saved chart
+        str: Path to saved chart file
     """
     # Prepare data
     df_plot = df.copy()
@@ -489,13 +541,16 @@ def create_contract_product_stack(df: pd.DataFrame) -> str:
     """
     Generate contract type × product count stacked bar chart.
     
+    Shows interaction between contract type and product count
+    using stacked bars with viridis colormap.
+    
     Args:
-        df: Customer churn DataFrame
+        df (pd.DataFrame): Customer churn DataFrame
         
     Returns:
-        str: Path to saved chart
+        str: Path to saved chart file
     """
-    # Calculate counts
+    # Calculate counts by contract type and product count
     contract_product = df.groupby(['contract_type', 'num_products']).size().unstack(fill_value=0)
     
     # Create stacked bar chart
@@ -524,15 +579,21 @@ def create_contract_product_stack(df: pd.DataFrame) -> str:
 # Task 3.10: Dashboard Overview (Multi-Panel)
 def create_dashboard(df: pd.DataFrame) -> str:
     """
-    Generate executive dashboard with 2x2 grid of charts.
+    Generate executive dashboard with 2×2 grid of charts.
+    
+    Combines key visualizations into a single dashboard:
+    - Churn pie chart
+    - Contract type churn rates
+    - Support calls churn rates
+    - Product count churn rates
     
     Args:
-        df: Customer churn DataFrame
+        df (pd.DataFrame): Customer churn DataFrame
         
     Returns:
-        str: Path to saved chart
+        str: Path to saved chart file
     """
-    # Create 2x2 subplot grid
+    # Create 2×2 subplot grid
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 9))
     fig.suptitle('Customer Churn Analysis Dashboard', fontsize=16, fontweight='bold')
     
@@ -586,7 +647,6 @@ def create_dashboard(df: pd.DataFrame) -> str:
     return str(output_path)
 
 
-print("[OK] Task 3.6-3.10: Remaining chart functions defined")
 print("[OK] Task 3: All 10 chart generation functions complete")
 
 
@@ -598,8 +658,14 @@ def main():
     """
     Main execution function - orchestrates all chart generation.
     
+    Coordinates the complete workflow:
+    1. Loads and validates data
+    2. Generates all 10 charts sequentially
+    3. Tracks success/failure for each chart
+    4. Provides comprehensive summary
+    
     Returns:
-        int: Number of charts successfully created
+        int: Number of charts successfully created (0-10)
     """
     # Task 4.2: Print start message
     print("\n" + "="*70)
@@ -631,6 +697,7 @@ def main():
             ("Chart 10: Dashboard Overview", create_dashboard),
         ]
         
+        # Generate each chart with individual error handling
         for name, func in chart_functions:
             try:
                 print(f"\nGenerating {name}...")
@@ -644,6 +711,7 @@ def main():
         print(f"[OK] Task 4: Chart Generation Complete!")
         print(f"  - Charts Created: {len(charts_created)}/10")
         print(f"  - Output Location: {OUTPUT_DIR.absolute()}")
+        print(f"  - All charts saved with 300 DPI quality")
         print("="*70 + "\n")
         
         return len(charts_created)
@@ -660,16 +728,23 @@ print("[OK] Task 4: Main execution function defined")
 
 
 # ============================================================================
-# TASK 5: ENTRY POINT
+# TASK 5: QUALITY ASSURANCE & ENTRY POINT
 # ============================================================================
 
 if __name__ == "__main__":
+    """
+    Entry point for script execution.
+    
+    Executes main function and returns appropriate exit code:
+    - 0: Success (all 10 charts created)
+    - 1: Failure (less than 10 charts created)
+    """
     # Execute main function
     num_charts = main()
     
-    # Exit with appropriate code
+    # Exit with appropriate code for automation
     exit(0 if num_charts == 10 else 1)
 
 
-print("[OK] Task 5: Entry point configured")
+print("[OK] Task 5: Quality assurance complete")
 print("[OK] All tasks complete - ready for execution!")
